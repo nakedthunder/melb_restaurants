@@ -9,6 +9,7 @@
     <meta name="description" content="melbourne restaurant" />
     <meta name="keywords" content="melbourne, restaurant, coffee" />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="map.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -49,7 +50,22 @@
       <div class="inner" id="map"></div>
     </main>
 
-    <!-- 카카오 지도 -->
+    <!-- infowindow HTML만들기 -->
+    <div class="infowindow">
+      <div class="infowindow-img-container">
+        <img
+          src="https://s3-prod.dogtopia.com/wp-content/uploads/sites/142/2016/05/small-dog-at-doggy-daycare-birmingham.jpg"
+          class="infowindow-img"
+        />
+      </div>
+      <!-- title, address and button -->
+      <div class="infowindow-body">
+        <h5 class="infowindow-title">할머니집</h5>
+        <p class="infowindow-address">서울시 관악구 봉천동</p>
+        <a href="" class="infowindow-btn" target="_blank">CLICK HERE</a>
+      </div>
+    </div>
+
     <script
       type="text/javascript"
       src="//dapi.kakao.com/v2/maps/sdk.js?appkey=77944f74d93160a5473611afeb0b1877&libraries=services"
