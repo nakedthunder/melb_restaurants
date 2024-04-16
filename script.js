@@ -62,21 +62,112 @@ https://apis.map.kakao.com/web/sample/addr2coord/ (주소로 장소 표시하기
 // Geocoder: 서비스 라이브러리를 불러와야한다. <script> 태그에서 src에 &libraries=services 추가함
 var geocoder = new kakao.maps.services.Geocoder();
 
+// async function setMap() {
+//   for (var i = 0; i < dataSet.length; i++) {
+//     // getCoordsByAddress 주소를 좌표로 변환하는 코드를 반복문안에 넣어준다.
+//     let position = await getCoordsByAddress(dataSet[i].address);
+//     console.log(position);
+
+//     // 마커를 생성합니다
+//     var marker = new kakao.maps.Marker({
+//       map: map, // 마커를 표시할 지도
+//       // position: positions[i].latlng, // 마커를 표시할 위치
+//       position: position,
+//       // title: positions[i].title, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
+//     });
+//   }
+// }
+
 async function setMap() {
   for (var i = 0; i < dataSet.length; i++) {
-    // getCoordsByAddress 주소를 좌표로 변환하는 코드를 반복문안에 넣어준다.
     let position = await getCoordsByAddress(dataSet[i].address);
-    console.log(position);
 
     // 마커를 생성합니다
     var marker = new kakao.maps.Marker({
       map: map, // 마커를 표시할 지도
-      // position: positions[i].latlng, // 마커를 표시할 위치
-      position: position,
-      // title: positions[i].title, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
+      position: position, // 마커를 표시할 위치
     });
+
+    // 마커에 표시할 인포윈도우를 생성합니다
+    var infowindow = new kakao.maps.InfoWindow({
+      content: getContent(dataSet[i]), // 인포윈도우에 표시할 내용
+      disableAutoPan: true, // 인포윈도우를 열 때 지도가 자동으로 패닝하지 않을지의 여부 (기본값: false)
+    });
+
+    infowindowArray.push(infowindow);
+
+    // 마커에 mouseover 이벤트와 mouseout 이벤트를 등록합니다
+    // 이벤트 리스너로는 클로저를 만들어 등록합니다
+    // for문에서 클로저를 만들어 주지 않으면 마지막 마커에만 이벤트가 등록됩니다
+    kakao.maps.event.addListener(
+      marker,
+      "click",
+      makeOverListener(map, marker, infowindow, position)
+    );
+    // 커스텀: 맵을 클릭하면 현재 나타난 인포윈도우가 없어지게끔
+    kakao.maps.event.addListener(map, "click", makeOutListener(infowindow));
   }
 }
+
+function getContent(data) {
+  // 유튜브 섬네일 id 가져오기
+  let replaceUrl = data.url;
+  let finUrl = "";
+  replaceUrl = replaceUrl.replace("https://youtu.be/", "");
+  replaceUrl = replaceUrl.replace("https://www.youtube.com/embed/", "");
+  replaceUrl = replaceUrl.replace("https://www.youtube.com/watch?v=", "");
+  finUrl = replaceUrl.split("&")[0];
+
+  // 인포윈도우 가공하기
+  return `
+  <div class="infowindow">
+      <div class="infowindow-img-container">
+        <img
+          src="https://img.youtube.com/vi/${finUrl}/mqdefault.jpg"
+          class="infowindow-img"
+        />
+      </div>
+      <div class="infowindow-body">
+        <h5 class="infowindow-title">${data.title}</h5>
+        <p class="infowindow-address">${data.address}</p>
+        <a href="${data.url}" class="infowindow-btn" target="_blank">영상이동</a>
+      </div>
+    </div>
+  `;
+}
+
+// 인포윈도우를 표시하는 클로저를 만드는 함수입니다
+/* 
+  커스텀
+  1. 클릭시 다른 인포윈도우 닫기
+  2. 클릭한 곳으로 지도 중심 이동하기
+  */
+// 커스텀
+// 1. 클릭시 다른 인포윈도우 닫기
+let infowindowArray = [];
+function closeInfowindow() {
+  for (let infowindow of infowindowArray) {
+    infowindow.close();
+  }
+}
+
+// 인포윈도우를 닫는 클로저를 만드는 함수입니다
+function makeOutListener(infowindow) {
+  return function () {
+    infowindow.close();
+  };
+}
+
+function makeOverListener(map, marker, infowindow, position) {
+  return function () {
+    // 1. 클릭시 다른 인포윈도우 닫기
+    closeInfowindow();
+    infowindow.open(map, marker);
+    // 2. 클릭한 곳으로 짇 중심 이동하기
+    map.panTo(position);
+  };
+}
+
 function getCoordsByAddress(address) {
   // promise 형태로 반환
   return new Promise((resolve, reject) => {
@@ -93,3 +184,5 @@ function getCoordsByAddress(address) {
 }
 
 setMap();
+
+// 마케===
